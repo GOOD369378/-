@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#c0452f">
+<title>今天要买啥</title>
+<style>
+  :root{
+    --bg:#f7f5f1;
+    --card:#ffffff;
+    --ink:#1f1d1a;
+    --ink2:#7a736b;
+    --line:#e8e3db;
+    --brand:#c0452f;
+    --brand-soft:#fdf0ec;
+    --done:#a8a29a;
+    --fs:17px;
+  }
+  body.big{ --fs:20px; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);
+    font-size:var(--fs);line-height:1.5;
+    padding-bottom:112px;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:540px;margin:0 auto;padding:0 14px;}
+
+  /* 顶部 */
+  header{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:20px 14px 14px;gap:10px;
+  }
+  header .ttl{font-size:1.45em;font-weight:700;letter-spacing:.5px;line-height:1.2;}
+  header .date{font-size:.78em;color:var(--ink2);margin-top:4px;}
+  .fontbtn{
+    border:1px solid var(--line);background:#fff;color:var(--ink2);
+    font-size:16px;font-weight:700;width:46px;height:46px;border-radius:12px;
+    cursor:pointer;font-family:inherit;flex-shrink:0;
+  }
+  .fontbtn.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  /* 存储告警 */
+  .warn{
+    background:#fff6e8;border:1px solid #f0d9b5;color:#8a5a1c;
+    border-radius:12px;padding:12px 14px;font-size:.82em;line-height:1.7;
+    margin-bottom:14px;
+  }
+  .warn b{display:block;margin-bottom:2px;}
+
+  /* 输入区 */
+  .addbar{display:flex;gap:9px;margin-bottom:12px;}
+  .addbar input{
+    flex:1;min-width:0;border:2px solid var(--line);border-radius:14px;
+    padding:0 16px;height:56px;font-size:1.05em;font-family:inherit;
+    color:var(--ink);background:#fff;outline:none;
+  }
+  .addbar input::placeholder{color:#b8b1a8;}
+  .addbar input:focus{border-color:var(--brand);}
+  .addbar .add{
+    width:94px;height:56px;border:none;border-radius:14px;
+    background:var(--brand);color:#fff;font-size:1.1em;font-weight:700;
+    font-family:inherit;cursor:pointer;flex-shrink:0;
+  }
+  .addbar .add:active{opacity:.85;}
+
+  /* 常用 */
+  .quick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .quick button{
+    border:1px solid var(--line);background:#fff;color:var(--ink2);
+    border-radius:22px;padding:9px 16px;font-size:.88em;font-family:inherit;
+    cursor:pointer;
+  }
+  .quick button:active{background:var(--brand-soft);border-color:#eecfc6;color:var(--brand);}
+
+  /* 列表 */
+  .sechead{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 4px;margin:20px 0 10px;
+  }
+  .sechead .t{font-size:.82em;color:var(--ink2);letter-spacing:1.5px;font-weight:600;}
+  .sechead .act{
+    border:none;background:none;color:var(--ink2);font-size:.8em;
+    font-family:inherit;cursor:pointer;padding:6px 4px;
+  }
+  .sechead .act:active{color:var(--brand);}
+
+  ul.list{list-style:none;margin:0;padding:0;background:var(--card);
+    border-radius:16px;border:1px solid var(--line);overflow:hidden;}
+  ul.list:empty{display:none;}
+  ul.list > li{border-bottom:1px solid var(--line);}
+  ul.list > li:last-child{border-bottom:none;}
+
+  .row{
+    display:flex;align-items:center;gap:10px;
+    padding:14px;min-height:64px;
+  }
+  .box{
+    width:28px;height:28px;border:2px solid #cfc7bd;border-radius:9px;
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:17px;color:#fff;font-weight:700;
+  }
+  li.done .box{background:var(--done);border-color:var(--done);}
+  .nm{flex:1;min-width:0;word-break:break-all;}
+  li.done .nm{color:var(--done);text-decoration:line-through;}
+
+  /* 数量按钮 */
+  .qbtn{
+    flex-shrink:0;border:1px dashed #d8cfc4;background:#fff;color:#b3aaa0;
+    border-radius:9px;padding:7px 11px;font-size:.8em;font-family:inherit;
+    cursor:pointer;white-space:nowrap;max-width:96px;overflow:hidden;text-overflow:ellipsis;
+  }
+  .qbtn.on{
+    border:1px solid #eecfc6;border-style:solid;background:var(--brand-soft);
+    color:var(--brand);font-weight:700;
+  }
+  .qbtn:active{opacity:.7;}
+
+  .del{
+    border:none;background:none;color:#d5cec5;font-size:22px;line-height:1;
+    width:34px;height:44px;flex-shrink:0;cursor:pointer;font-family:inherit;
+    padding:0;
+  }
+  .del:active{color:var(--brand);}
+
+  /* 数量面板 */
+  .qpanel{
+    background:#faf8f5;border-top:1px solid var(--line);
+    padding:14px 14px 16px;
+  }
+  .qpanel .lab{font-size:.76em;color:var(--ink2);margin:0 0 8px;letter-spacing:1px;}
+  .qpanel .lab + .lab{margin-top:14px;}
+  .unitrow{display:flex;flex-wrap:wrap;gap:8px;}
+  .unitrow button{
+    min-width:52px;height:44px;border:1px solid var(--line);background:#fff;
+    border-radius:10px;font-size:.92em;font-family:inherit;color:var(--ink);
+    cursor:pointer;padding:0 10px;white-space:nowrap;line-height:1;
+  }
+  .unitrow button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700;}
+  .numrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .numrow button{
+    min-width:44px;height:40px;border:1px solid var(--line);background:#fff;
+    border-radius:10px;font-size:.92em;font-family:inherit;color:var(--ink2);
+    cursor:pointer;font-variant-numeric:tabular-nums;
+  }
+  .numrow button.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700;}
+  .qinput{
+    width:100%;height:52px;border:2px solid var(--line);border-radius:12px;
+    font-size:1.25em;font-weight:700;color:var(--brand);font-family:inherit;
+    text-align:center;outline:none;background:#fff;
+  }
+  .qinput:focus{border-color:var(--brand);}
+  .qfoot{display:flex;gap:9px;margin-top:14px;}
+  .qfoot button{
+    flex:1;height:48px;border-radius:12px;font-size:.95em;font-family:inherit;
+    cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink2);
+  }
+  .qfoot .ok{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700;}
+
+  .empty{
+    text-align:center;color:#a8a29a;font-size:.9em;
+    padding:44px 24px;line-height:1.9;
+    background:var(--card);border:1px dashed var(--line);border-radius:16px;
+  }
+
+  /* 底部 */
+  .foot{
+    position:fixed;left:0;right:0;bottom:0;z-index:9;
+    background:rgba(255,255,255,.97);
+    border-top:1px solid var(--line);
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  }
+  .foot-in{max-width:540px;margin:0 auto;display:flex;align-items:center;gap:10px;}
+  .money{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
+  .money .lb{font-size:.85em;color:var(--ink2);white-space:nowrap;}
+  .money .yuan{font-size:1.1em;font-weight:700;color:var(--ink2);}
+  .money input{
+    width:78px;border:none;border-bottom:2px solid var(--line);
+    font-size:1.3em;font-weight:700;color:var(--brand);
+    font-family:inherit;text-align:center;padding:4px 0;outline:none;
+    background:transparent;border-radius:0;min-width:0;
+  }
+  .money input:focus{border-bottom-color:var(--brand);}
+  .copy{
+    border:1px solid var(--brand);background:var(--brand-soft);color:var(--brand);
+    border-radius:12px;padding:0 16px;height:52px;font-size:.95em;font-weight:600;
+    font-family:inherit;cursor:pointer;flex-shrink:0;white-space:nowrap;
+  }
+  .copy:active{background:#f9e2db;}
+
+  /* 提示 */
+  .toast{
+    position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);
+    background:rgba(31,29,26,.93);color:#fff;padding:16px 24px;border-radius:14px;
+    font-size:.95em;z-index:99;max-width:80%;text-align:center;line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="ttl">今天要买啥</div>
+    <div class="date" id="today">今天</div>
+  </div>
+  <button class="fontbtn" id="fontBtn" title="放大字">字</button>
+</header>
+
+<div class="wrap">
+
+  <div class="warn" id="stWarn" style="display:none;">
+    <b>现在这样打开记不住东西</b>
+    请点右上角“⋯”，选“用浏览器打开”，再用浏览器里的“添加到主屏幕”。用抖音或微信直接看，关掉就没了。
+  </div>
+
+  <noscript>
+    <div class="warn" style="display:block;">
+      <b>这个浏览器不让页面运行脚本</b>
+      抖音、微信里直接打开会这样，按钮点了没反应。请点右上角“⋯”→“用浏览器打开”（Safari、Chrome、夸克都行），就能正常用了。
+    </div>
+  </noscript>
+
+  <div class="addbar">
+    <input id="inp" placeholder="五花肉2斤  或  鸡蛋" autocomplete="off" enterkeyhint="done">
+    <button class="add" id="addBtn">加上</button>
+  </div>
+  <p style="font-size:.76em;color:#a8a29a;margin:-4px 4px 14px;line-height:1.6;">
+    想带数量就一起写，比如“五花肉 2斤”“鸡蛋 30个”，会自动认出来。也可以加完再点右边改。
+  </p>
+
+  <!-- 常用：先写死在页面上，脚本跑起来后再替换成你常用的 -->
+  <div class="quick" id="quick">
+    <button data-n="五花肉">+ 五花肉</button>
+    <button data-n="鸡蛋">+ 鸡蛋</button>
+    <button data-n="青菜">+ 青菜</button>
+    <button data-n="土豆">+ 土豆</button>
+    <button data-n="豆腐">+ 豆腐</button>
+    <button data-n="大米">+ 大米</button>
+    <button data-n="食用油">+ 食用油</button>
+    <button data-n="葱姜蒜">+ 葱姜蒜</button>
+  </div>
+
+  <div class="sechead">
+    <span class="t">要买的</span>
+    <button class="act" id="clearAll">全部清掉</button>
+  </div>
+  <ul class="list" id="todoList"></ul>
+  <div class="empty" id="emptyTip">还没记东西<br>上面输入名字，或者点一下下面的常用</div>
+
+  <div class="sechead" id="doneHead" style="display:none;">
+    <span class="t">已经买了</span>
+    <button class="act" id="clearDone">清空</button>
+  </div>
+  <ul class="list" id="doneList"></ul>
+
+</div>
+
+<div class="foot">
+  <div class="foot-in">
+    <div class="money">
+      <span class="lb">今天花了</span>
+      <span class="yuan">¥</span>
+      <input id="money" inputmode="decimal" placeholder="0">
+      <span class="lb">元</span>
+    </div>
+    <button class="copy" id="copyBtn">发清单</button>
+  </div>
+</div>
+
+<script>
+/* ========== 配置 ========== */
+var PRESET = ["五花肉","鸡蛋","青菜","土豆","豆腐","大米","食用油","葱姜蒜"];
+var UNITS  = ["斤","个","条","袋","箱","包","把","份","只","块"];
+var NUMS   = ["1","2","3","5","10","20"];
+/* ========================== */
+
+var KEY = "maicai_v2";
+function $(id){ return document.getElementById(id); }
+
+/* ---------- 安全存储：localStorage 用不了就退回内存 ---------- */
+var store = (function(){
+  var mem = {};
+  var ok = false;
+  try{
+    localStorage.setItem("__probe__","1");
+    localStorage.removeItem("__probe__");
+    ok = true;
+  }catch(e){ ok = false; }
+  return {
+    usable: ok,
+    get: function(k){
+      if(ok){ try{ return localStorage.getItem(k); }catch(e){} }
+      return (k in mem) ? mem[k] : null;
+    },
+    set: function(k,v){
+      mem[k] = v;
+      if(ok){ try{ localStorage.setItem(k,v); return true; }catch(e){} }
+      return false;
+    }
+  };
+})();
+
+/* ---------- 状态 ---------- */
+var state = { items: [], total: "", date: "", openQty: null };
+
+/* ---------- 日期 ---------- */
+function todayStr(){
+  var d = new Date();
+  var w = ["日","一","二","三","四","五","六"][d.getDay()];
+  return (d.getMonth()+1) + "月" + d.getDate() + "日 星期" + w;
+}
+function todayKey(){
+  var d = new Date();
+  return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+}
+
+/* ---------- 存取 ---------- */
+function load(){
+  try{
+    var raw = JSON.parse(store.get(KEY) || "null");
+    if(raw && raw.items && raw.items.length !== undefined){
+      state.items = raw.items;
+      state.total = raw.total || "";
+      state.date  = raw.date || "";
+    }
+  }catch(e){ state.items = []; }
+}
+function save(){
+  store.set(KEY, JSON.stringify({
+    items: state.items, total: state.total, date: state.date
+  }));
+}
+
+/* ---------- 提示 ---------- */
+var toastTimer = null;
+function toast(msg){
+  var old = document.querySelector(".toast");
+  if(old) old.parentNode.removeChild(old);
+  var t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 1800);
+}
+
+/* ---------- 解析 “五花肉2斤” ---------- */
+function parseInput(s){
+  s = (s || "").trim();
+  if(!s) return null;
+  var re = /^(.+?)\s*([0-9]+(?:\.[0-9]+)?)\s*(斤|个|条|袋|箱|包|把|份|只|块|瓶|桶|盒|棵|根|张|片)$/;
+  var m = s.match(re);
+  if(m) return { name: m[1].trim(), qty: m[2], unit: m[3] };
+  return { name: s, qty: "", unit: "" };
+}
+function qtyText(it){
+  if(!it.qty) return "";
+  return it.qty + (it.unit || "斤");
+}
+
+/* ---------- 渲染 ---------- */
+function render(){
+  var todo = [], done = [];
+  for(var i=0;i<state.items.length;i++){
+    if(state.items[i].done) done.push(state.items[i]);
+    else todo.push(state.items[i]);
+  }
+
+  var tl = $("todoList");
+  tl.innerHTML = "";
+  for(var j=0;j<todo.length;j++) tl.appendChild(buildRow(todo[j], false));
+
+  var dl = $("doneList");
+  dl.innerHTML = "";
+  for(var k=0;k<done.length;k++) dl.appendChild(buildRow(done[k], true));
+
+  $("emptyTip").style.display = (todo.length===0 && done.length===0) ? "block" : "none";
+  $("doneHead").style.display = done.length ? "flex" : "none";
+
+  renderQuick();
+}
+
+function buildRow(it, isDone){
+  var li = document.createElement("li");
+  if(isDone) li.className = "done";
+
+  var row = document.createElement("div");
+  row.className = "row";
+
+  var box = document.createElement("span");
+  box.className = "box";
+  box.textContent = isDone ? "✓" : "";
+  box.onclick = function(){ toggle(it.id); };
+
+  var nm = document.createElement("span");
+  nm.className = "nm";
+  nm.textContent = it.name;
+  nm.onclick = function(){ toggle(it.id); };
+
+  var qb = document.createElement("button");
+  qb.className = "qbtn" + (it.qty ? " on" : "");
+  qb.textContent = it.qty ? qtyText(it) : "份量";
+  qb.onclick = function(e){
+    e.stopPropagation();
+    state.openQty = (state.openQty === it.id) ? null : it.id;
+    render();
+    if(state.openQty){
+      setTimeout(function(){
+        var pn = document.querySelector(".qpanel");
+        if(!pn || !pn.getBoundingClientRect) return;
+        var r = pn.getBoundingClientRect();
+        var footH = 96;                       // 底部固定栏占的高度
+        var over = r.bottom - (window.innerHeight - footH);
+        if(over > 0){
+          try{ window.scrollBy({ top: over + 14, behavior: "smooth" }); }
+          catch(err){ window.scrollBy(0, over + 14); }
+        }
+      }, 80);
+    }
+  };
+
+  var del = document.createElement("button");
+  del.className = "del";
+  del.textContent = "×";
+  del.onclick = function(){ remove(it.id); };
+
+  row.appendChild(box);
+  row.appendChild(nm);
+  row.appendChild(qb);
+  row.appendChild(del);
+  li.appendChild(row);
+
+  if(state.openQty === it.id && !isDone){
+    li.appendChild(buildQtyPanel(it));
+  }
+  return li;
+}
+
+function buildQtyPanel(it){
+  var p = document.createElement("div");
+  p.className = "qpanel";
+
+  var l1 = document.createElement("p");
+  l1.className = "lab";
+  l1.textContent = "买多少";
+  p.appendChild(l1);
+
+  var inp = document.createElement("input");
+  inp.className = "qinput";
+  inp.type = "text";
+  inp.inputMode = "decimal";
+  inp.value = it.qty || "";
+  inp.placeholder = "填个数";
+  p.appendChild(inp);
+
+  var nr = document.createElement("div");
+  nr.className = "numrow";
+  NUMS.forEach(function(n){
+    var b = document.createElement("button");
+    b.textContent = n;
+    if(String(it.qty) === n) b.className = "on";
+    b.onclick = function(){
+      inp.value = n;
+      it.qty = n;
+      if(!it.unit) it.unit = "斤";
+      save(); render();
+    };
+    nr.appendChild(b);
+  });
+  p.appendChild(nr);
+
+  var l2 = document.createElement("p");
+  l2.className = "lab";
+  l2.textContent = "单位";
+  p.appendChild(l2);
+
+  var ur = document.createElement("div");
+  ur.className = "unitrow";
+  UNITS.forEach(function(u){
+    var b = document.createElement("button");
+    b.textContent = u;
+    if((it.unit || "斤") === u) b.className = "on";
+    b.onclick = function(){
+      it.unit = u;
+      if(!it.qty) it.qty = "1";
+      inp.value = it.qty;
+      save(); render();
+    };
+    ur.appendChild(b);
+  });
+  p.appendChild(ur);
+
+  var foot = document.createElement("div");
+  foot.className = "qfoot";
+
+  var clr = document.createElement("button");
+  clr.textContent = "不要数量";
+  clr.onclick = function(){
+    it.qty = ""; it.unit = "";
+    state.openQty = null;
+    save(); render();
+  };
+
+  var ok = document.createElement("button");
+  ok.className = "ok";
+  ok.textContent = "好了";
+  ok.onclick = function(){
+    it.qty = (inp.value || "").trim();
+    if(it.qty && !it.unit) it.unit = "斤";
+    if(!it.qty) it.unit = "";
+    state.openQty = null;
+    save(); render();
+  };
+
+  foot.appendChild(clr);
+  foot.appendChild(ok);
+  p.appendChild(foot);
+
+  inp.addEventListener("input", function(){
+    it.qty = inp.value;
+  });
+
+  return p;
+}
+
+function renderQuick(){
+  var box = $("quick");
+  var recent = [];
+  for(var i=state.items.length-1;i>=0;i--) recent.push(state.items[i].name);
+
+  var names = [], seen = {};
+  var all = recent.concat(PRESET);
+  for(var j=0;j<all.length && names.length<10;j++){
+    var n = all[j];
+    if(!seen[n]){ seen[n] = 1; names.push(n); }
+  }
+
+  box.innerHTML = "";
+  names.forEach(function(n){
+    var b = document.createElement("button");
+    b.textContent = "+ " + n;
+    b.onclick = function(){ addItem(n); };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- 操作 ---------- */
+function addItem(raw){
+  var p = parseInput(raw);
+  if(!p || !p.name) return;
+
+  for(var i=0;i<state.items.length;i++){
+    var it = state.items[i];
+    if(it.name === p.name && !it.done){
+      if(p.qty){ it.qty = p.qty; it.unit = p.unit; save(); render(); }
+      else toast("「" + p.name + "」已经在单子上了");
+      return;
+    }
+  }
+
+  var doneOne = null;
+  for(var k=0;k<state.items.length;k++){
+    if(state.items[k].name === p.name && state.items[k].done) doneOne = state.items[k];
+  }
+  if(doneOne){
+    doneOne.done = false;
+    if(p.qty){ doneOne.qty = p.qty; doneOne.unit = p.unit; }
+  }else{
+    state.items.push({
+      id: Date.now() + "" + Math.floor(Math.random()*999),
+      name: p.name, qty: p.qty, unit: p.unit, done: false
+    });
+  }
+  save(); render();
+}
+
+function toggle(id){
+  for(var i=0;i<state.items.length;i++){
+    if(state.items[i].id === id){ state.items[i].done = !state.items[i].done; break; }
+  }
+  if(state.openQty === id) state.openQty = null;
+  save(); render();
+}
+
+function remove(id){
+  var arr = [];
+  for(var i=0;i<state.items.length;i++){
+    if(state.items[i].id !== id) arr.push(state.items[i]);
+  }
+  state.items = arr;
+  if(state.openQty === id) state.openQty = null;
+  save(); render();
+}
+
+/* ---------- 事件 ---------- */
+$("addBtn").onclick = function(){
+  var v = $("inp").value;
+  if(!v.trim()){ toast("先写个名字"); return; }
+  addItem(v);
+  $("inp").value = "";
+  $("inp").focus();
+};
+$("inp").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){ e.preventDefault(); $("addBtn").click(); }
+});
+
+$("clearAll").onclick = function(){
+  if(!state.items.length) return;
+  if(confirm("把单子上的东西全部清掉？")){
+    state.items = []; save(); render();
+  }
+};
+$("clearDone").onclick = function(){
+  if(confirm("清空已经买了的？")){
+    var arr = [];
+    for(var i=0;i<state.items.length;i++){
+      if(!state.items[i].done) arr.push(state.items[i]);
+    }
+    state.items = arr; save(); render();
+  }
+};
+
+/* ---------- 金额 ---------- */
+$("money").addEventListener("input", function(e){
+  state.total = e.target.value;
+  save();
+});
+
+/* ---------- 复制 ---------- */
+$("copyBtn").onclick = function(){
+  var todo = [], i;
+  for(i=0;i<state.items.length;i++){
+    if(!state.items[i].done) todo.push(state.items[i]);
+  }
+  if(!todo.length){ toast("单子上还没有要买的东西"); return; }
+
+  var lines = [];
+  for(i=0;i<todo.length;i++){
+    var q = qtyText(todo[i]);
+    lines.push((i+1) + ". " + todo[i].name + (q ? " " + q : ""));
+  }
+  var txt = "今天要买：\n" + lines.join("\n");
+
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.cssText = "position:fixed;left:-9999px;";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try{ ok = document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+    toast(ok ? "已复制，去微信粘贴" : "复制不了，手动记一下");
+  }
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){
+      toast("已复制，去微信粘贴");
+    }).catch(fallback);
+  }else{
+    fallback();
+  }
+};
+
+/* ---------- 字号 ---------- */
+$("fontBtn").onclick = function(){
+  var big = document.body.classList.toggle("big");
+  $("fontBtn").className = "fontbtn" + (big ? " on" : "");
+  store.set("maicai_big", big ? "1" : "0");
+};
+
+/* ---------- 启动 ---------- */
+(function init(){
+  try{ $("today").textContent = todayStr(); }catch(e){}
+
+  try{
+    load();
+
+    var tk = todayKey();
+    if(state.date !== tk){
+      state.date = tk;
+      state.total = "";
+      save();
+    }
+    $("money").value = state.total || "";
+
+    if(store.get("maicai_big") === "1"){
+      document.body.classList.add("big");
+      $("fontBtn").className = "fontbtn on";
+    }
+
+    render();
+  }catch(e){
+    // 万一脚本出错，至少把常用标签恢复成静态的
+    if(!$("quick").children.length){
+      $("quick").innerHTML = "";
+      PRESET.forEach(function(n){
+        var b = document.createElement("button");
+        b.textContent = "+ " + n;
+        b.onclick = function(){ addItem(n); };
+        $("quick").appendChild(b);
+      });
+    }
+  }
+
+  if(!store.usable){
+    $("stWarn").style.display = "block";
+  }
+})();
+</script>
+</body>
+</html>
